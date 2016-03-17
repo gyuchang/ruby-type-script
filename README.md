@@ -11,9 +11,6 @@ Installation
 
     gem install type-script
 
-*Note: This compiler library has replaced the original TypeScript
- compiler that was written in Ruby.*
-
 
 Credit
 ------------
