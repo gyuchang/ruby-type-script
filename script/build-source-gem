@@ -1,0 +1,61 @@
+#!/bin/bash
+
+set -e
+set -x
+
+VERSION="$1"
+
+mkdir -p tmp/
+pushd tmp/
+
+npm install typescript@"$VERSION"
+
+mkdir -p lib/type_script
+
+mv node_modules/typescript/lib/typescript.js lib/type_script/typescript.js
+
+cat << ERUBY > lib/type_script/source.rb
+module TypeScript
+  module Source
+    def self.version
+      '$VERSION'
+    end
+
+    def self.bundled_path
+      File.expand_path("../typescript.js", __FILE__)
+    end
+  end
+end
+ERUBY
+
+cat << ERUBY > type-script-source.gemspec
+require 'rubygems'
+require 'json'
+
+gemspec = Gem::Specification.new do |s|
+  s.name      = 'type-script-source'
+  s.version   = '$VERSION'
+  s.date      = Date.today
+
+  s.homepage    = "http://typescriptlang.org"
+  s.summary     = "The TypeScript Compiler"
+  s.description = <<-EOS
+    TypeScript lets you write JavaScript the way you really want to.
+    TypeScript is a typed superset of JavaScript that compiles to plain JavaScript.
+    Any browser. Any host. Any OS. Open Source.
+  EOS
+
+  s.files = [
+    'lib/type_script/typescript.js',
+    'lib/type_script/source.rb'
+  ]
+
+  s.authors           = ['Gyuchang Jun']
+  s.email             = 'gyuchang@gmail.com'
+  s.rubyforge_project = 'type-script-source'
+  s.license           = "MIT"
+end
+ERUBY
+
+gem build type-script-source.gemspec
+mv *.gem ../
